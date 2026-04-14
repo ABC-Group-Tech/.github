@@ -47,10 +47,25 @@ runs:
         echo "::endgroup::"
 
         echo "::group::완료 대기 중..."
-        aws ssm wait command-executed \
-          --region "${{ inputs.region }}" \
-          --command-id "$COMMAND_ID" \
-          --instance-id "${{ inputs.instance-id }}" || true
+        DEADLINE=$(( $(date +%s) + ${{ inputs.timeout }} ))
+        while true; do
+          STATUS=$(aws ssm get-command-invocation \
+            --region "${{ inputs.region }}" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ inputs.instance-id }}" \
+            --query "StatusDetails" \
+            --output text 2>/dev/null || echo "Pending")
+          echo "  상태: $STATUS ($(date '+%H:%M:%S'))"
+          if [[ "$STATUS" != "InProgress" && "$STATUS" != "Pending" && "$STATUS" != "Delayed" ]]; then
+            break
+          fi
+          if [ $(date +%s) -ge $DEADLINE ]; then
+            echo "타임아웃 (${{ inputs.timeout }}초 초과)"
+            STATUS="TimedOut"
+            break
+          fi
+          sleep 10
+        done
         echo "::endgroup::"
 
         echo "::group::배포 결과"
