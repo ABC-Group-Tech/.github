@@ -29,6 +29,10 @@ runs:
         printf '%s' "$DEPLOY_SCRIPT" >> /tmp/ssm_deploy_script.sh
         ENCODED=$(base64 -w 0 /tmp/ssm_deploy_script.sh)
 
+        REPO_SHORT=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2 | cut -c1-30)
+        SHA_SHORT=$(echo "$GITHUB_SHA" | cut -c1-7)
+        COMMENT="Deploy: ${REPO_SHORT}@${SHA_SHORT}"
+
         echo "::group::SSM 명령 전송"
         COMMAND_ID=$(aws ssm send-command \
           --region "${{ inputs.region }}" \
@@ -36,7 +40,7 @@ runs:
           --document-name "AWS-RunShellScript" \
           --parameters "commands=[\"echo $ENCODED | base64 -d | bash -s\"]" \
           --timeout-seconds "${{ inputs.timeout }}" \
-          --comment "Deploy from GitHub Actions - $GITHUB_REPOSITORY@$GITHUB_SHA" \
+          --comment "$COMMENT" \
           --query "Command.CommandId" \
           --output text)
         echo "Command ID: $COMMAND_ID"
