@@ -25,9 +25,8 @@ runs:
       env:
         DEPLOY_SCRIPT: ${{ inputs.script }}
       run: |
-        # SSM은 HOME 없이 실행되므로 스크립트 앞에 export HOME=/root 자동 주입
-        printf 'export HOME=/root
-%s' "$DEPLOY_SCRIPT" > /tmp/ssm_deploy_script.sh
+        echo 'export HOME=/root' > /tmp/ssm_deploy_script.sh
+        printf '%s' "$DEPLOY_SCRIPT" >> /tmp/ssm_deploy_script.sh
         ENCODED=$(base64 -w 0 /tmp/ssm_deploy_script.sh)
 
         echo "::group::SSM 명령 전송"
