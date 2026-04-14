@@ -25,7 +25,15 @@ runs:
       env:
         DEPLOY_SCRIPT: ${{ inputs.script }}
       run: |
-        printf '%s' "$DEPLOY_SCRIPT" > /tmp/ssm_deploy_script.sh
+        # SSM은 HOME 환경변수 없이 실행되므로 wrapper로 감싸서 전송
+        WRAPPER=$(cat << 'WRAPPER_EOF'
+        export HOME=/root
+        WRAPPER_EOF
+        )
+        FULL_SCRIPT="${WRAPPER}"$'
+'"${DEPLOY_SCRIPT}"
+
+        printf '%s' "$FULL_SCRIPT" > /tmp/ssm_deploy_script.sh
         ENCODED=$(base64 -w 0 /tmp/ssm_deploy_script.sh)
 
         echo "::group::SSM 명령 전송"
