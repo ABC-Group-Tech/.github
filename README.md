@@ -5,8 +5,9 @@ ABC Group Tech Organization의 공유 설정 및 템플릿 저장소입니다.
 ## 📁 구조
 
 - `profile/` - Organization 프로필 README
+- `pull_request_template.md` - PR 제목/본문 작성 규칙 및 템플릿
 - 향후 추가 예정:
-  - Issue/PR 템플릿
+  - Issue 템플릿
   - CODEOWNERS
   - 워크플로우 템플릿
   - 개발 가이드
